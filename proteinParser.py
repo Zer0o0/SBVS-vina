@@ -32,7 +32,7 @@ organism = options.ORGANISM
 
 
 if __name__ == '__main__':
-    #进入protein目录
+    # 进入protein目录
     path_protein = os.getcwd()
     path_protein_raw = os.path.join(path_protein, 'protein_raw')
     path_protein_clean = os.path.join(path_protein, 'protein_clean')
@@ -59,16 +59,18 @@ if __name__ == '__main__':
             general = protein.general_info()
             molecule = protein.macromolecules_info()
             literature = protein.literature_info()
+            ligands = protein.smolecule_info()
             info.update(general)
             info.update(molecule)
             info.update(literature)
+            info.update(ligands)
             info_all.append(info)
         except:
             with open(log_file_info, 'a') as f:
                 f.write(pid+' 信息异常\n')
     with open(info_file, 'w', newline='', encoding='utf-8') as f:
-        fieldnames = ['Entry', 'Title', 'Classification', 'Organism', 'Method', 'Released', 'Resolution',
-                      'Molecule', 'Chains', 'Organism_sep', 'Gene', 'Uniport', 'PubMed', 'DOI']
+        fieldnames = ['Entry', 'Title', 'Classification', 'Organism', 'Method', 'Released', 'Resolution', 'Molecule',
+                      'Chains', 'Organism_sep', 'Gene', 'Uniport', 'PubMed', 'DOI', 'Ligand_ID', 'Ligand_chain', 'Ligand_name']
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(info_all)
