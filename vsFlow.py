@@ -4,21 +4,24 @@
 
 import os
 import sys
+import platform
 import time
-#from ini import VINA_ROOT
+
+from ini import VINA
 
 
 def runVina(receptorfile, ligandfile, conffile, topath='result_vina'):
     # AutoDock Vina 1.1.2
     # command: vina --config config.txt --ligand ligand.pdbqt --log log.txt
-    name_receptor = receptorfile.split('/')[1].split('.')[0]
-    name_ligand = ligandfile.split('/')[1].split('.')[0]
+    name_receptor = os.path.basename(receptorfile).split('.')[0]
+    name_ligand = os.path.basename(ligandfile).split('.')[0]
     outfile = name_receptor+'_'+name_ligand+'_out'+'.pdbqt'
+    poutfile=os.path.join(topath,outfile)
     logfile = name_receptor+'_'+name_ligand+'.log'
+    plogfile=os.path.join(topath,logfile)
     print('正在对接：', name_receptor, '和', name_ligand)
-    cmd = r'vina --receptor %s --ligand %s --config %s --out %s/%s --log %s/%s' % (
-        receptorfile, ligandfile, conffile, topath, outfile, topath, logfile)
-    # print(cmd)
+    cmd = r'%s --receptor %s --ligand %s --config %s --out %s --log %s' % (
+        VINA, receptorfile, ligandfile, conffile, poutfile, plogfile)
     os.system(cmd)
 
 
@@ -50,6 +53,8 @@ def getResult(path_result_vina, path_score):
             f.writelines(failures)
 
 
+SYSTEM = platform.system()  # Windows|Linux
+
 if __name__ == '__main__':
     path_root = os.getcwd()
     path_protein_pdbqt = os.path.join(path_root, 'protein_pdbqt')
@@ -68,10 +73,10 @@ if __name__ == '__main__':
     prepligands = [i for i in os.listdir(
         path_ligand_pdbqt) if i.endswith('.pdbqt')]
     for rec in prepreceptors:
-        receptorfile = 'protein_pdbqt/'+rec
-        conffile = 'confs/'+rec.split('.')[0]+'.conf'
+        receptorfile = os.path.join('protein_pdbqt', rec)
+        conffile = os.path.join('confs', rec.split('.')[0])
         for lig in prepligands:
-            ligandfile = 'ligand_pdbqt/'+lig
+            ligandfile = os.path.join('ligand_pdbqt', lig)
             try:
                 runVina(receptorfile, ligandfile, conffile)
             except:
