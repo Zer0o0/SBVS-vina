@@ -16,8 +16,10 @@ optParser = OptionParser(usage=usage)
 optParser.add_option('-s', '--structure', action='store', type='string', dest='STRUCT',
                      help='待处理的结构（protein/molecule）')
 (options, args) = optParser.parse_args()
+
 target = options.STRUCT
 ADT_ROOT = MGL_ROOT+r'\Lib\site-packages\AutoDockTools'
+
 
 def timeLimit(interval):
     def wraps(func):
