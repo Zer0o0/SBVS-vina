@@ -6,27 +6,34 @@ import sys
 import time
 import csv
 import multiprocessing as mp
+
 from ini import OB_ROOT
 
+OBMI = os.path.join(OB_ROOT, 'obminimize')
+OBPR = os.path.join(OB_ROOT, 'obprop')
 
-def optimizeMole(molefile, frompath='.', topath='.'):
+
+def optimizeMole(molefile, topath='ligand_pdb'):
     # OpenBabel 3.1.1 --obminimize
     # command: obminimize -ff MMFF94 ligand.pdb > ligand.pdb
     # -ff 力场
-    name = molefile.split('.')[0]
+    name = os.path.basename(molefile).split('.')[0]
     optifile = name+'.pdb'
+    poptfile = os.path.join(topath, optifile)
     print('### Optimizing ligand:', name)
-    cmd = r'%s\obminimize -ff MMFF94 %s\%s > %s\%s' % (
-        OB_ROOT,frompath, molefile, topath, optifile)    # ???? 优化力场和局部场电位
+    cmd = r'%s -ff MMFF94 %s > %s' % (
+        OBMI, molefile, poptfile)    # ???? 优化力场和局部场电位
     os.system(cmd)
 
 
-def calculateProp(molefile, frompath='.', topath='.'):
+def calculateProp(molefile, topath='ligand_prop'):
     # OpenBabel 3.1.1 --obprop
     # command: obprop mole.pdb
-    name = molefile.split('.')[0]
+    name = os.path.basename(molefile).split('.')[0]
     propfile = name+'_prop.txt'
-    cmd = r'%s\obprop %s\%s > %s\%s' % (OB_ROOT,frompath, molefile, topath, propfile)
+    ppropfile = os.path.join(topath, propfile)
+    cmd = r'%s %s > %s' % (OBPR, molefile, ppropfile)
+    print(cmd)
     os.system(cmd)
 
 
@@ -45,16 +52,16 @@ if __name__ == '__main__':
     path_ligand_raw = os.path.join(path_ligand, 'ligand_raw')
     path_ligand_pdb = os.path.join(path_ligand, 'ligand_pdb')
     path_ligand_prop = os.path.join(path_ligand, 'ligand_prop')
-    # 优化小分子
+    # # 优化小分子
     ligand_raw = [i for i in os.listdir(path_ligand_raw) if i.endswith('.pdb')]
-    for m in ligand_raw:
-        if not m.startswith('ligand'):
-            optimizeMole(m, frompath='ligand_raw', topath='ligand_pdb')
+    # for m in ligand_raw:
+    #     pm = os.path.join('ligand_raw', m)
+    #     optimizeMole(pm)
     # 计算小分子属性
     pool = mp.Pool()
     for m in ligand_raw:
-        pool.apply_async(calculateProp, args=(m,), kwds={
-                         'frompath': 'ligand_raw', 'topath': 'ligand_prop'})
+        pm = os.path.join('ligand_raw', m)
+        pool.apply_async(calculateProp, args=(pm,))
     pool.close()
     pool.join()
     # 整合
