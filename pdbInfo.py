@@ -135,11 +135,35 @@ class infohtml:
         return mac_info
 
     def smolecule_info(self):
-        pass
+        lig_info = {}
+        ids = []
+        chains = []
+        names = []
+        soup = self.__soup
+        if soup:
+            ligands = soup.select(
+                'div#LigandsTable>table#LigandsMainTable>tbody>tr')
+            if ligands:
+                for lig in ligands:
+                    cont = lig.find_all('td')
+                    i = cont[0].a.get_text()
+                    c = cont[1].div.get_text()
+                    n = cont[2].strong.get_text()
+                    ids.append(i)
+                    names.append(n)
+                    chains.append(c)
+                lig_info['Ligand_ID'] = ';'.join(ids)
+                lig_info['Ligand_chain'] = ';'.join(chains)
+                lig_info['Ligand_name'] = ';'.join(names)
+            else:
+                lig_info['Ligand_ID'] = ''
+                lig_info['Ligand_chain'] = ''
+                lig_info['Ligand_name'] = ''
+        return lig_info
 
 
 def downloader(pid, topath):
-    url_root = 'https://files.rcsb.org/download/'  #PDB数据库网址，下载结构文件
+    url_root = 'https://files.rcsb.org/download/'  # PDB数据库网址，下载结构文件
     filename = pid+'.pdb'
     url_get = url_root+filename
     topath = os.path.join(topath, filename)
@@ -152,3 +176,12 @@ def downloader(pid, topath):
                 f.write(chunk)
     except:
         print(pid, '下载失败！')
+
+
+def downloader0(url, tofile):
+    r = requests.get(url, stream=True)
+    content_size = int(r.headers['content-length'])
+    print('Downloading:', url, content_size)
+    with open(tofile, 'wb') as f:
+        for chunk in r.iter_content(chunk_size=512):
+            f.write(chunk)
